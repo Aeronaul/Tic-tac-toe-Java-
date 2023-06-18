@@ -2,6 +2,7 @@
 A Java desktop application for playing the classic game of Tic-Tac-Toe. The application allows you to play against the computer, against another human player, or even watch the computer play against itself. It is built using Java Swing with JDK 17.
 
 ## Tic-Tac-Toe Screenshot
+![Tic-tac-toe screenshot](screenshot.jpg?raw=true)
 
 ## Features
 - Play against the computer: Challenge the computer and test your Tic-Tac-Toe skills.
