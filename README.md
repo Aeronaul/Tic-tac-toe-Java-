@@ -18,7 +18,7 @@ To get a local copy of the project up and running on your machine, follow these 
 
 ### Installation
 1. Clone the repository:
-  git clone https://github.com/Aeronaul/Tic-tac-toe-Java-.git
+  git clone https://github.com/Aeronaul/Tictactoe_Java.git
 
 2. Compile the Java source files:
   cd Tic-tac-toe-Java-/src
