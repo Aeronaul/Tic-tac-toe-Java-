@@ -14,13 +14,16 @@ public class Board extends JPanel {
     final static String INGAME_TEXT = "Game in progress";
     final static int AI_DELAY = 300;
     final static int AUTO_DELAY = 500;
+    
     private static boolean isX = true;
+    private boolean clickable = true;
+    
     JLabel status;
     JButton entity1, entity2, startReset;
     Tile[][] tiles = new Tile[3][3];
     int[][] matrix = new int[3][3];
     Logger logger = Logger.getLogger("Board");
-    private boolean clickable = true;
+
 
     Board(JLabel status, JButton entity1, JButton entity2, JButton startReset) {
         this.status = status;
