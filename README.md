@@ -31,7 +31,7 @@ javac tictactoe/*.java
 ```
 3. Run the application:
 ```
-java -cp tictactoe ApplicationRunner
+java tictactoe.ApplicationRunner
 ```
 
 ## Usage
@@ -45,4 +45,4 @@ java -cp tictactoe ApplicationRunner
 The Java programming language and Java Swing library.
 
 ## Contact
-For any questions or inquiries, please contact- aeronaul@proton.me.
+For any questions or inquiries, please contact me at: aeronaul@proton.me.
