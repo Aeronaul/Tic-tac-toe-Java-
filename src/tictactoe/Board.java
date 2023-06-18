@@ -20,8 +20,8 @@ public class Board extends JPanel {
     
     JLabel status;
     JButton entity1, entity2, startReset;
-    Tile[][] tiles = new Tile[3][3];
-    int[][] matrix = new int[3][3];
+    Tile[][] tiles = new Tile[3][3]; // collection of buttons on game board
+    int[][] matrix = new int[3][3]; // underlying representation of game board for processing
     Logger logger = Logger.getLogger("Board");
 
 
