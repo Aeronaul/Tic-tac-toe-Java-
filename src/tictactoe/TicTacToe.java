@@ -3,7 +3,6 @@ package tictactoe;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
 
 public class TicTacToe extends JFrame {
     public TicTacToe() {
@@ -31,7 +30,6 @@ public class TicTacToe extends JFrame {
         bottomPanel.add(status, BorderLayout.WEST);
 
         JPanel topPanel = new JPanel(new GridBagLayout());
-//        topPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.weightx = 1.0;
