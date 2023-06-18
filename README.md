@@ -23,7 +23,7 @@ git clone https://github.com/Aeronaul/Tictactoe_Java.git
 ```
 2. Compile the Java source files:
 ```
-cd Tic-tac-toe-Java-/src
+cd Tictactoe_Java/src
 javac tictactoe/*.java
 ```
 3. Run the application:
