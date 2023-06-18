@@ -10,7 +10,6 @@ public class Tile extends JButton {
     private static final Color ENABLED_COLOR = new Color(255, 200, 0);
     private static final Color DISABLED_COLOR = Color.GRAY;
     private static final int BORDER_THICKNESS = 3;
-    private static boolean isX = true;
     private boolean enabled = true;
     int row, col;
 
@@ -84,10 +83,6 @@ public class Tile extends JButton {
         this.enabled = enable;
         Color bgColor = enable ? ENABLED_COLOR : DISABLED_COLOR;
         setBackground(bgColor);
-    }
-
-    public static void resetTurn() {
-        isX = true;
     }
 
     @Override
