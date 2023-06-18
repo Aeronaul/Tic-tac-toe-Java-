@@ -22,10 +22,10 @@ To get a local copy of the project up and running on your machine, follow these 
 ```
 git clone https://github.com/Aeronaul/Tictactoe_Java.git
 ```
-2. Compile the Java source files:
 ```
 cd Tictactoe_Java/src
 ```
+2. Compile the Java source files:
 ```
 javac tictactoe/*.java
 ```
