@@ -4,7 +4,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
@@ -13,20 +12,21 @@ import java.util.stream.Stream;
 public class Board extends JPanel {
     final static String START_TEXT = "Game is not started";
     final static String INGAME_TEXT = "Game in progress";
+    final static int AI_DELAY = 300;
+    final static int AUTO_DELAY = 500;
+    private static boolean isX = true;
     JLabel status;
     JButton entity1, entity2, startReset;
     Tile[][] tiles = new Tile[3][3];
     int[][] matrix = new int[3][3];
-    private static boolean isX = true;
-    private boolean isActive = false;
-
     Logger logger = Logger.getLogger("Board");
+    private boolean clickable = true;
 
     Board(JLabel status, JButton entity1, JButton entity2, JButton startReset) {
         this.status = status;
         status.setText(START_TEXT);
 
-        logger.setLevel(Level.OFF);
+        logger.setLevel(Level.OFF); // change to INFO when debugging
 
         this.entity1 = entity1;
         this.entity2 = entity2;
@@ -51,20 +51,14 @@ public class Board extends JPanel {
                 add(tile);
                 String name = String.valueOf((char) (j + 65)) + (3 - i);
                 tile.setName("Button".concat(name));
-
                 tile.addActionListener(e -> {
-                    if (!tile.isEnabled() || !tile.getText().isBlank()) return;
-                    if (isX) {
-                        tile.setText("X");
-                        matrix[tile.row][tile.col] = 1;
-                    } else {
-                        tile.setText("O");
-                        matrix[tile.row][tile.col] = -1;
-                    }
-                    logger.info(tile.getName() + " pressed!");
-                    isX = !isX;
-                    updateStatus();
-                    nextMove();
+                    clickable = !isAITurn();
+                    if (!tile.isEnabled() || !tile.getText().isBlank() || !clickable) return;
+                    clickable = false;
+                    update(tile.row, tile.col);
+                    logger.info(String.format("%s pressed!", tile.getName()));
+                    new Thread(() -> nextMove(AI_DELAY)).start(); // to add delay
+
                 });
             }
         }
@@ -80,24 +74,31 @@ public class Board extends JPanel {
         int row = random.nextInt(0, 3);
         int col = random.nextInt(0, 3);
         update(row, col);
-        isX = !isX;
-        nextMove();
+        new Thread(() -> nextMove(2, AUTO_DELAY)).start(); // to add delay
     }
 
-    void nextMove() {
+    void nextMove(int delay) {
+        nextMove(1, delay);
+    }
+
+    void nextMove(int depth, int delay) {
 
         if (!isAITurn()) return;
 
         int[] move = {-1, -1};
         int bestScore;
 
+        pause(delay);
+
         if (isX) {
             bestScore = Integer.MIN_VALUE;
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     if (matrix[i][j] == 0) {
                         matrix[i][j] = 1;
-                        int score = minimax2(false, 1);
+                        if (logger.getLevel() == Level.INFO) printMatrix();
+                        int score = minimax(false, depth);
+                        logger.info(String.format("Overall Score (X): %d\n", score));
                         matrix[i][j] = 0;
                         if (score > bestScore) {
                             bestScore = score;
@@ -107,13 +108,16 @@ public class Board extends JPanel {
                     }
                 }
             }
+            if (bestScore == Integer.MIN_VALUE) bestScore = 0;
         } else {
             bestScore = Integer.MAX_VALUE;
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     if (matrix[i][j] == 0) {
                         matrix[i][j] = -1;
-                        int score = minimax2(true, 1);
+                        if (logger.getLevel() == Level.INFO) printMatrix();
+                        int score = minimax(true, depth);
+                        logger.info(String.format("Overall Score (X): %d\n", score));
                         matrix[i][j] = 0;
                         if (score < bestScore) {
                             bestScore = score;
@@ -123,75 +127,73 @@ public class Board extends JPanel {
                     }
                 }
             }
+            if (bestScore == Integer.MAX_VALUE) bestScore = 0;
         }
 
+        logger.info(String.format("Best score is %d at (%d,%d)\n", bestScore, move[0], move[1]));
         update(move[0], move[1]);
-//        pause(100);
-        isX = !isX;
-        nextMove();
+        clickable = true;
+        new Thread(() -> nextMove(delay)).start(); // to add delay
     }
 
     void pause(int millis) {
-        Timer timer = new Timer(millis, e -> {
-            System.out.println("Hello");
-        });
-        timer.setRepeats(false);
-        timer.start();
         try {
-            Thread.sleep(1000);
+            Thread.sleep(millis);
         } catch (InterruptedException ie) {
             System.out.println(ie.getMessage());
         }
     }
 
-    int minimax2(boolean isX, int depth) {
-        int multiplier = 10 - depth;
+    int minimax(boolean isX, int depth) {
         int result = check();
-        if (result != 0) return result * multiplier;
+        int multiplier = 10 - depth;
+        if (result != 0) {
+            return result * multiplier;
+        }
 
         int bestScore;
-
         if (isX) {
             bestScore = Integer.MIN_VALUE;
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     if (matrix[i][j] == 0) {
                         matrix[i][j] = 1;
-                        int score = minimax2(false, depth + 1);
+                        int score = minimax(false, depth + 1);
                         matrix[i][j] = 0;
-                        if (score > bestScore) {
+                        if (score > bestScore)
                             bestScore = score;
-                        }
                     }
                 }
             }
+            if (bestScore == Integer.MIN_VALUE) bestScore = 0;
         } else {
             bestScore = Integer.MAX_VALUE;
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
                     if (matrix[i][j] == 0) {
                         matrix[i][j] = -1;
-                        int score = minimax2(true, depth + 1);
+                        int score = minimax(true, depth + 1);
                         matrix[i][j] = 0;
-                        if (score < bestScore) {
+                        if (score < bestScore)
                             bestScore = score;
-                        }
                     }
                 }
             }
+            if (bestScore == Integer.MAX_VALUE) bestScore = 0;
         }
-
-        return bestScore * multiplier;
+        return bestScore;
     }
 
     boolean isAITurn() {
         return !isFilled() &&
                 (isX && entity1.getText().equals("Robot") ||
-                !isX && entity2.getText().equals("Robot"));
+                        !isX && entity2.getText().equals("Robot"));
     }
 
     void update(int row, int col) {
+        if (!isBoardEnabled()) return;
         this.update(row, col, isX);
+        isX = !isX;
     }
 
     void update(int row, int col, boolean isX) {
@@ -199,14 +201,7 @@ public class Board extends JPanel {
             matrix[row][col] = isX ? 1 : -1;
             tiles[row][col].setText(isX ? "X" : "O");
         }
-//        isX = !isX;
         updateStatus();
-    }
-
-    void isEmpty(int row, int col) {
-        if (row + col >= 0)
-            matrix[row][col] = 0;
-        isX = !isX;
     }
 
     void toggle(boolean enable) {
@@ -217,7 +212,6 @@ public class Board extends JPanel {
         }
         revalidate();
         repaint();
-        isActive = enable;
     }
 
     void reset() {
@@ -243,35 +237,35 @@ public class Board extends JPanel {
         });
 
         isX = true;
-        status.setText(START_TEXT); // TODO: may fail test case
-//        firstMove();
+        status.setText(START_TEXT);
+        clickable = true;
     }
 
     void printMatrix() {
         StringBuilder rVal = new StringBuilder();
         for (int row = 0; row < 3; row++) {
-            rVal.setLength(0);
+            rVal.append("\n");
             for (int col = 0; col < 3; col++) {
                 rVal.append(matrix[row][col]).append("\t");
             }
-            System.out.println(rVal.toString());
         }
-        System.out.println("---------");
+        logger.info(String.format("%s\n-----------", rVal));
     }
 
     int check() {
         int diag = checkDiag();
-        if (diag != 0) return checkDiag();
+        if (diag != 0) return diag;
+        int result = 0;
 
         for (int i = 0; i < 3; i++) {
             int rowRes = checkRow(i);
             int colRes = checkCol(i);
-            int result = rowRes != 0 ? rowRes : colRes;
+            result = rowRes != 0 ? rowRes : colRes;
             if (result != 0)
-                return result;
+                break;
         }
 
-        return 0;
+        return result;
     }
 
     void updateStatus() {
@@ -279,8 +273,7 @@ public class Board extends JPanel {
         if (result != 0) {
             status.setText(String.format("%s wins", result == 1 ? "X" : "O"));
             toggle(false);
-        }
-        else if (isFilled()) {
+        } else if (isFilled()) {
             status.setText("Draw");
             toggle(false);
         }
@@ -299,8 +292,8 @@ public class Board extends JPanel {
     }
 
     private int checkDiag() {
-        if (matrix[0][0] == matrix[1][1] && matrix[1][1] == matrix[2][2] ||
-            matrix[0][2] == matrix[1][1] && matrix[1][1] == matrix[2][0]) {
+        if ((matrix[0][0] == matrix[1][1] && matrix[1][1] == matrix[2][2]) ||
+                (matrix[0][2] == matrix[1][1] && matrix[1][1] == matrix[2][0])) {
             return matrix[1][1];
         }
         return 0;
@@ -310,7 +303,7 @@ public class Board extends JPanel {
         return Stream.of(matrix).flatMapToInt(IntStream::of).filter(i -> i != 0).count() == 9;
     }
 
-    boolean isEmpty() {
-        return Stream.of(matrix).flatMapToInt(IntStream::of).filter(i -> i == 0).count() == 9;
+    boolean isBoardEnabled() {
+        return tiles[0][0].isEnabled();
     }
 }
