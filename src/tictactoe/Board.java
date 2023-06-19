@@ -3,6 +3,7 @@ package tictactoe;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.text.MessageFormat;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,25 +12,23 @@ import java.util.stream.Stream;
 
 public class Board extends JPanel {
     final static String START_TEXT = "Game is not started";
-    final static String INGAME_TEXT = "Game in progress";
+    final static MessageFormat TURN_TEXT = new MessageFormat("The turn of {0} Player ({1})");
+    final static MessageFormat WIN_TEXT = new MessageFormat("The {0} Player {1} wins");
     final static int AI_DELAY = 300;
     final static int AUTO_DELAY = 500;
-    
     private static boolean isX = true;
-    private boolean clickable = true;
-    
     JLabel status;
     JButton entity1, entity2, startReset;
-    Tile[][] tiles = new Tile[3][3]; // collection of buttons on game board
-    int[][] matrix = new int[3][3]; // underlying representation of game board for processing
+    Tile[][] tiles = new Tile[3][3];
+    int[][] matrix = new int[3][3];
     Logger logger = Logger.getLogger("Board");
-
+    private boolean clickable = true;
 
     Board(JLabel status, JButton entity1, JButton entity2, JButton startReset) {
         this.status = status;
         status.setText(START_TEXT);
 
-        logger.setLevel(Level.OFF); // change to INFO when debugging
+        logger.setLevel(Level.OFF); // change to INFO or WARNING when debugging
 
         this.entity1 = entity1;
         this.entity2 = entity2;
@@ -38,7 +37,10 @@ public class Board extends JPanel {
         startReset.addActionListener(e -> {
             startReset.removeActionListener(startReset.getActionListeners()[0]);
             toggle(true);
-            status.setText(Board.INGAME_TEXT);
+            status.setText(TURN_TEXT.format(new String[]{
+                    isX ? entity1.getText() : entity2.getText(),
+                    isX ? "X" : "O"
+            }));
             firstMove();
             startReset.setText("Reset");
             startReset.addActionListener(f -> reset());
@@ -59,8 +61,8 @@ public class Board extends JPanel {
                     if (!tile.isEnabled() || !tile.getText().isBlank() || !clickable) return;
                     clickable = false;
                     update(tile.row, tile.col);
-                    logger.info(String.format("%s pressed!", tile.getName()));
-                    new Thread(() -> nextMove(AI_DELAY)).start(); // to add delay
+                    logger.warning(String.format("%s pressed!", tile.getName()));
+                    new Thread(() -> nextMove(AI_DELAY)).start(); // to add delay after player input
 
                 });
             }
@@ -77,7 +79,7 @@ public class Board extends JPanel {
         int row = random.nextInt(0, 3);
         int col = random.nextInt(0, 3);
         update(row, col);
-        new Thread(() -> nextMove(2, AUTO_DELAY)).start(); // to add delay
+        new Thread(() -> nextMove(2, AUTO_DELAY)).start(); // to add delay between both AI players
     }
 
     void nextMove(int delay) {
@@ -197,6 +199,7 @@ public class Board extends JPanel {
         if (!isBoardEnabled()) return;
         this.update(row, col, isX);
         isX = !isX;
+        updateStatus();
     }
 
     void update(int row, int col, boolean isX) {
@@ -204,7 +207,6 @@ public class Board extends JPanel {
             matrix[row][col] = isX ? 1 : -1;
             tiles[row][col].setText(isX ? "X" : "O");
         }
-        updateStatus();
     }
 
     void toggle(boolean enable) {
@@ -233,7 +235,10 @@ public class Board extends JPanel {
         startReset.addActionListener(e -> {
             startReset.removeActionListener(startReset.getActionListeners()[0]);
             toggle(true);
-            status.setText(Board.INGAME_TEXT);
+            status.setText(TURN_TEXT.format(new String[]{
+                    isX ? entity1.getText() : entity2.getText(),
+                    isX ? "X" : "O"
+            }));
             firstMove();
             startReset.setText("Reset");
             startReset.addActionListener(f -> reset());
@@ -274,11 +279,20 @@ public class Board extends JPanel {
     void updateStatus() {
         int result = check();
         if (result != 0) {
-            status.setText(String.format("%s wins", result == 1 ? "X" : "O"));
+            String[] arr = {
+                    result == 1 ? entity1.getText() : entity2.getText(),
+                    result == 1 ? "X" : "O"
+            };
+            status.setText(WIN_TEXT.format(arr));
             toggle(false);
         } else if (isFilled()) {
             status.setText("Draw");
             toggle(false);
+        } else {
+            status.setText(TURN_TEXT.format(new String[]{
+                    isX ? entity1.getText() : entity2.getText(),
+                    isX ? "X" : "O"
+            }));
         }
     }
 
