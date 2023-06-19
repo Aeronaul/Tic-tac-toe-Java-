@@ -17,7 +17,7 @@ To get a local copy of the project up and running on your machine, follow these 
 - Java Development Kit (JDK) 17 or higher
 - Git
 
-### Installation
+### Build & Run
 1. Clone the repository:
 ```
 git clone https://github.com/Aeronaul/Tictactoe_Java.git
