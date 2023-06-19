@@ -10,7 +10,6 @@ public class TicTacToe extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(300, 350);
         setLocationRelativeTo(null);
-        setVisible(true);
         setLayout(new BorderLayout());
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
@@ -20,7 +19,7 @@ public class TicTacToe extends JFrame {
         status.setFont(new Font("Arial", Font.BOLD, 12));
         JButton player1 = new PlayerButton("Human");
         player1.setName("ButtonPlayer1");
-        JButton player2 = new PlayerButton("Robot");
+        JButton player2 = new PlayerButton("Human");
         player2.setName("ButtonPlayer2");
         JButton startReset = new JButton("Start");
         startReset.setName("ButtonStartReset");
@@ -28,6 +27,8 @@ public class TicTacToe extends JFrame {
         startReset.setForeground(Color.WHITE);
         Board board = new Board(status, player1, player2, startReset);
         bottomPanel.add(status, BorderLayout.WEST);
+
+        setupMenu(board, player1, player2);
 
         JPanel topPanel = new JPanel(new GridBagLayout());
 
@@ -48,6 +49,66 @@ public class TicTacToe extends JFrame {
         add(topPanel, BorderLayout.NORTH);
         add(board, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
+
+        setVisible(true);
+    }
+
+    void setupMenu(Board board, JButton player1, JButton player2) {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu game_menu = new JMenu("Game");
+        game_menu.setName("MenuGame");
+
+        JMenuItem human_v_human = new JMenuItem("Human vs Human");
+        JMenuItem human_v_robot = new JMenuItem("Human vs Robot");
+        JMenuItem robot_v_human = new JMenuItem("Robot vs Human");
+        JMenuItem robot_v_robot = new JMenuItem("Robot vs Robot");
+        JMenuItem exit_button = new JMenuItem("Exit");
+
+        human_v_human.addActionListener(l -> {
+            board.reset();
+            player1.setText("Human");
+            player2.setText("Human");
+            board.startReset.doClick();
+        });
+
+        human_v_robot.addActionListener(l -> {
+            board.reset();
+            player1.setText("Human");
+            player2.setText("Robot");
+            board.startReset.doClick();
+        });
+
+        robot_v_human.addActionListener(l -> {
+            board.reset();
+            player1.setText("Robot");
+            player2.setText("Human");
+            board.startReset.doClick();
+        });
+
+        robot_v_robot.addActionListener(l -> {
+            board.reset();
+            player1.setText("Robot");
+            player2.setText("Robot");
+            board.startReset.doClick();
+        });
+
+        exit_button.addActionListener(l -> System.exit(0));
+
+        human_v_human.setName("MenuHumanHuman");
+        human_v_robot.setName("MenuHumanRobot");
+        robot_v_human.setName("MenuRobotHuman");
+        robot_v_robot.setName("MenuRobotRobot");
+        exit_button.setName("MenuExit");
+
+        game_menu.add(human_v_human);
+        game_menu.add(human_v_robot);
+        game_menu.add(robot_v_human);
+        game_menu.add(robot_v_robot);
+        game_menu.addSeparator();
+        game_menu.add(exit_button);
+
+        menuBar.add(game_menu);
+        setJMenuBar(menuBar);
     }
 }
 
